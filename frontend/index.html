@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Peminjaman Barang</title>
+</head>
+<link rel="stylesheet" href="style.css">
+<body>
+
+<h2>Data Barang</h2>
+
+<!-- input -->
+<input id="nama" placeholder="Nama barang">
+<input id="stok" placeholder="Stok">
+<input id="kondisi" placeholder="Kondisi">
+
+<button onclick="tambah()">Tambah</button>
+
+<hr>
+
+<!-- listdata -->
+<ul id="list"></ul>
+
+<script>
+
+
+// LOAD DATA (TAMPILKAN)
+function load() {
+    fetch('http://localhost:3000/barang')
+    .then(res => res.json())
+    .then(data => {
+        let list = document.getElementById('list');
+        list.innerHTML = "";
+
+        data.forEach(item => {
+            let li = document.createElement('li');
+
+          li.innerHTML = `
+             ${item.nama_barang} (Stok: ${item.stok})
+              <button onclick="edit(${item.id}, '${item.nama_barang}', ${item.stok}, '${item.kondisi}')">Edit</button>
+             <button onclick="hapus(${item.id})">Hapus</button>
+                `;
+
+            list.appendChild(li);
+        });
+    });
+}
+
+// TAMBAH DATA
+function tambah() {
+    let nama = document.getElementById('nama').value;
+    let stok = document.getElementById('stok').value;
+    let kondisi = document.getElementById('kondisi').value;
+
+    fetch('http://localhost:3000/tambah', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nama, stok, kondisi })
+    })
+    .then(() => {
+        load(); // refresh data
+    });
+}
+
+// HAPUS DATA
+
+function hapus(id) {
+    fetch('http://localhost:3000/hapus/' + id, {
+        method: 'DELETE'
+    })
+    .then(() => {
+        load(); // refresh data
+    });
+}
+
+function edit(id, namalama, stoklama, kondisilama){
+
+    let namaBaru = prompt("Nama barang:", namalama);
+    let stokBaru = prompt("Stok:", stoklama);
+    let kondisiBaru = prompt("Kondisi:", kondisilama);
+
+    fetch('http://localhost:3000/edit/' + id,{
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            nama: namaBaru,
+            stok: stokBaru,
+            kondisi: kondisiBaru
+        })
+    })
+    .then(() => load());
+}
+
+load();
+</script>
+
+</body>
+</html>
