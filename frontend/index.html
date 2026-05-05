@@ -2,13 +2,13 @@
 <html>
 <head>
     <title>Peminjaman Barang</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<link rel="stylesheet" href="style.css">
 <body>
 
 <h2>Data Barang</h2>
 
-<!-- input -->
+<!-- INPUT BARANG -->
 <input id="nama" placeholder="Nama barang">
 <input id="stok" placeholder="Stok">
 <input id="kondisi" placeholder="Kondisi">
@@ -17,13 +17,30 @@
 
 <hr>
 
-<!-- listdata -->
+<!-- LIST BARANG -->
 <ul id="list"></ul>
+
+<hr>
+
+<h2>Peminjaman</h2>
+
+<!-- INPUT PEMINJAMAN -->
+<input id="nama_peminjam" placeholder="Nama peminjam">
+<input id="barang_pinjam" placeholder="Nama barang">
+<input id="jumlah" placeholder="Jumlah">
+<input type="date" id="tgl_pinjam">
+
+<button onclick="pinjam()">Pinjam</button>
+
+<!-- LIST PEMINJAMAN -->
+<ul id="listPinjam"></ul>
+
 
 <script>
 
-
-// LOAD DATA (TAMPILKAN)
+// =======================
+// LOAD DATA BARANG
+// =======================
 function load() {
     fetch('http://localhost:3000/barang')
     .then(res => res.json())
@@ -34,18 +51,21 @@ function load() {
         data.forEach(item => {
             let li = document.createElement('li');
 
-          li.innerHTML = `
-             ${item.nama_barang} (Stok: ${item.stok})
-              <button onclick="edit(${item.id}, '${item.nama_barang}', ${item.stok}, '${item.kondisi}')">Edit</button>
-             <button onclick="hapus(${item.id})">Hapus</button>
-                `;
+            li.innerHTML = `
+                ${item.nama_barang} (Stok: ${item.stok})
+                <button onclick="edit(${item.id}, '${item.nama_barang}', ${item.stok}, '${item.kondisi}')">Edit</button>
+                <button onclick="hapus(${item.id})">Hapus</button>
+            `;
 
             list.appendChild(li);
         });
     });
 }
 
-// TAMBAH DATA
+
+// =======================
+// TAMBAH BARANG
+// =======================
 function tambah() {
     let nama = document.getElementById('nama').value;
     let stok = document.getElementById('stok').value;
@@ -56,27 +76,28 @@ function tambah() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nama, stok, kondisi })
     })
-    .then(() => {
-        load(); // refresh data
-    });
+    .then(() => load());
 }
 
-// HAPUS DATA
 
+// =======================
+// HAPUS BARANG
+// =======================
 function hapus(id) {
     fetch('http://localhost:3000/hapus/' + id, {
         method: 'DELETE'
     })
-    .then(() => {
-        load(); // refresh data
-    });
+    .then(() => load());
 }
 
-function edit(id, namalama, stoklama, kondisilama){
 
-    let namaBaru = prompt("Nama barang:", namalama);
-    let stokBaru = prompt("Stok:", stoklama);
-    let kondisiBaru = prompt("Kondisi:", kondisilama);
+// =======================
+// EDIT BARANG
+// =======================
+function edit(id, nama, stok, kondisi){
+    let namaBaru = prompt("Nama:", nama);
+    let stokBaru = prompt("Stok:", stok);
+    let kondisiBaru = prompt("Kondisi:", kondisi);
 
     fetch('http://localhost:3000/edit/' + id,{
         method: 'PUT',
@@ -90,7 +111,75 @@ function edit(id, namalama, stoklama, kondisilama){
     .then(() => load());
 }
 
+
+// =======================
+// PINJAM BARANG
+// =======================
+function pinjam() {
+    let nama = document.getElementById('nama_peminjam').value;
+    let barang = document.getElementById('barang_pinjam').value;
+    let jumlah = document.getElementById('jumlah').value;
+    let tgl_pinjam = document.getElementById('tgl_pinjam').value;
+
+    fetch('http://localhost:3000/pinjam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nama, barang, jumlah, tgl_pinjam })
+    })
+    .then(() => loadPinjam());
+}
+
+
+// =======================
+// LOAD PEMINJAMAN
+// =======================
+function loadPinjam() {
+    fetch('http://localhost:3000/peminjaman')
+    .then(res => res.json())
+    .then(data => {
+        let list = document.getElementById('listPinjam');
+        list.innerHTML = "";
+
+        data.forEach(item => {
+            let li = document.createElement('li');
+
+            li.innerHTML = `
+                <b>${item.nama_peminjam}</b> pinjam 
+                <b>${item.nama_barang}</b> (${item.jumlah}) <br>
+                Tanggal: ${item.tanggal_pinjam} <br>
+                Status: ${item.status} <br>
+                Kembali: ${item.tanggal_kembali || '-'} <br>
+
+                ${item.status === 'dipinjam' 
+                    ? `<button onclick="kembalikan(${item.id})">Kembalikan</button>` 
+                    : ''}
+            `;
+
+            list.appendChild(li);
+        });
+    });
+}
+
+
+// =======================
+// KEMBALIKAN
+// =======================
+function kembalikan(id) {
+
+    let tgl = prompt("Masukkan tanggal kembali (YYYY-MM-DD):");
+
+    fetch('http://localhost:3000/kembalikan/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tgl_kembali: tgl })
+    })
+    .then(() => loadPinjam());
+}
+
+// =======================
 load();
+loadPinjam();
+
 </script>
 
 </body>
