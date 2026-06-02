@@ -1,109 +1,137 @@
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
 }
 
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f5f7fb;
-    color: #333;
+body{
+ background:#e9eef5;
+ padding:30px;
 }
 
-/* CONTAINER */
-.container {
-    max-width: 700px;
-    margin: 40px auto;
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+.container{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    border:1px solid #d6dde8;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
 
-/* TITLE */
-h2 {
-    margin-bottom: 15px;
-    color: #2c3e50;
+h2{
+    color:#1e293b;
+    margin-bottom:15px;
+    border-left:5px solid #3498db;
+    padding-left:10px;
 }
 
-/* INPUT */
-input {
-    width: calc(100% - 10px);
-    padding: 10px;
-    margin: 6px 0;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    outline: none;
-    transition: 0.2s;
+input{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ddd;
+    border-radius:8px;
+    outline:none;
 }
 
-input:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 5px rgba(79,70,229,0.2);
+input:focus{
+    border-color:#3498db;
 }
 
-/* BUTTON */
-button {
-    padding: 10px 14px;
-    margin-top: 8px;
-    border: none;
-    border-radius: 8px;
-    background: #4f46e5;
-    color: white;
-    cursor: pointer;
-    transition: 0.2s;
+button{
+    padding:10px 16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    color:white;
+    font-weight:bold;
+    margin-top:8px;
 }
 
-button:hover {
-    background: #4338ca;
+button:hover{
+    opacity:0.9;
 }
 
-/* LIST */
-ul {
-    list-style: none;
-    margin-top: 15px;
+.btn-tambah{
+    background:#2563eb;
 }
 
-li {
-    background: #f9fafc;
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.btn-edit{
+    background:#f39c12;
 }
 
-/* BUTTON DALAM LIST */
-li button {
-    width: fit-content;
-    margin-right: 5px;
+.btn-hapus{
+    background:#e74c3c;
 }
 
-/* WARNA BUTTON KHUSUS */
-li button:nth-child(2) {
-    background: #f59e0b;
+.btn-kembali{
+    background:#27ae60;
 }
 
-li button:nth-child(3) {
-    background: #ef4444;
+ul{
+    list-style:none;
+    margin-top:15px;
 }
 
-/* STATUS */
-.status {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 5px;
-    width: fit-content;
+li{
+    background:#fafafa;
+    border-left:5px solid #3498db;
+    padding:15px;
+    margin-bottom:10px;
+    border-radius:10px;
 }
 
-.dipinjam {
-    background: #fee2e2;
-    color: #dc2626;
+hr{
+    margin:25px 0;
+    border:none;
+    border-top:1px solid #ddd;
 }
 
-.dikembalikan {
-    background: #dcfce7;
-    color: #16a34a;
+.status-dipinjam{
+    color:#e74c3c;
+    font-weight:bold;
+}
+
+.status-kembali{
+    color:#27ae60;
+    font-weight:bold;
+}
+.stats{
+    display:flex;
+    gap:15px;
+    margin:25px 0;
+    flex-wrap:wrap;
+}
+
+.card{
+    flex:1;
+    min-width:200px;
+    padding:20px;
+    border-radius:15px;
+    color:white;
+    text-align:center;
+    box-shadow:0 5px 15px rgba(0,0,0,0.15);
+}
+
+.card h3{
+    font-size:32px;
+    margin-bottom:8px;
+}
+
+.card p{
+    margin:0;
+}
+
+.card-barang{
+    background:linear-gradient(135deg,#2563eb,#3b82f6);
+}
+
+.card-pinjam{
+    background:linear-gradient(135deg,#f59e0b,#fbbf24);
+}
+
+.card-kembali{
+    background:linear-gradient(135deg,#16a34a,#22c55e);
 }
