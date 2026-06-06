@@ -1,6 +1,6 @@
-const express = require('express');
-const mysql = require('mysql2');
-const cors = require('cors');
+const express = require("express");
+const mysql = require("mysql2");
+const cors = require("cors");
 
 const app = express();
 
@@ -8,230 +8,195 @@ app.use(cors());
 app.use(express.json());
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'peminjaman_db'
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "peminjaman_db",
 });
 
 db.connect((err) => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log("Database terhubung");
-    }
+  if (err) {
+    console.log(err);
+  } else {
+    console.log("Database terhubung");
+  }
 });
-
 
 // =======================
 // AMBIL DATA BARANG
 // =======================
-app.get('/barang', (req, res) => {
+app.get("/barang", (req, res) => {
+  db.query("SELECT * FROM barang", (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.send("Error");
+    }
 
-    db.query(
-        "SELECT * FROM barang",
-        (err, result) => {
-
-            if (err) {
-                console.log(err);
-                return res.send("Error");
-            }
-
-            res.json(result);
-        }
-    );
-
+    res.json(result);
+  });
 });
-
 
 // =======================
 // TAMBAH BARANG
 // =======================
-app.post('/tambah', (req, res) => {
+app.post("/tambah", (req, res) => {
+  const { nama, stok, kondisi } = req.body;
 
-    const { nama, stok, kondisi } = req.body;
+  db.query(
+    "INSERT INTO barang (nama_barang, stok, kondisi) VALUES (?, ?, ?)",
+    [nama, stok, kondisi],
+    (err) => {
+      if (err) {
+        console.log(err);
+        return res.send("Gagal tambah");
+      }
 
-    db.query(
-        "INSERT INTO barang (nama_barang, stok, kondisi) VALUES (?, ?, ?)",
-        [nama, stok, kondisi],
-        (err) => {
-
-            if (err) {
-                console.log(err);
-                return res.send("Gagal tambah");
-            }
-
-            res.send("Berhasil tambah");
-        }
-    );
-
+      res.send("Berhasil tambah");
+    },
+  );
 });
-
 
 // =======================
 // EDIT BARANG
 // =======================
-app.put('/edit/:id', (req, res) => {
+app.put("/edit/:id", (req, res) => {
+  const id = req.params.id;
+  const { nama, stok, kondisi } = req.body;
 
-    const id = req.params.id;
-    const { nama, stok, kondisi } = req.body;
+  db.query(
+    "UPDATE barang SET nama_barang=?, stok=?, kondisi=? WHERE id=?",
+    [nama, stok, kondisi, id],
+    (err) => {
+      if (err) {
+        console.log(err);
+        return res.send("Gagal edit");
+      }
 
-    db.query(
-        "UPDATE barang SET nama_barang=?, stok=?, kondisi=? WHERE id=?",
-        [nama, stok, kondisi, id],
-        (err) => {
-
-            if (err) {
-                console.log(err);
-                return res.send("Gagal edit");
-            }
-
-            res.send("Berhasil edit");
-        }
-    );
-
+      res.send("Berhasil edit");
+    },
+  );
 });
-
 
 // =======================
 // HAPUS BARANG
 // =======================
-app.delete('/hapus/:id', (req, res) => {
+app.delete("/hapus/:id", (req, res) => {
+  const id = req.params.id;
 
-    const id = req.params.id;
+  db.query("DELETE FROM barang WHERE id=?", [id], (err) => {
+    if (err) {
+      console.log(err);
+      return res.send("Gagal hapus");
+    }
 
-    db.query(
-        "DELETE FROM barang WHERE id=?",
-        [id],
-        (err) => {
-
-            if (err) {
-                console.log(err);
-                return res.send("Gagal hapus");
-            }
-
-            res.send("Berhasil hapus");
-        }
-    );
-
+    res.send("Berhasil hapus");
+  });
 });
-
 
 // =======================
 // PINJAM BARANG
 // =======================
-app.post('/pinjam', (req, res) => {
+app.post("/pinjam", (req, res) => {
+  const { nama, barang, jumlah, tgl_pinjam } = req.body;
 
-    const { nama, barang, jumlah, tgl_pinjam } = req.body;
+  db.query(
+    "SELECT stok FROM barang WHERE nama_barang=?",
+    [barang],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.send("Error");
+      }
 
-    db.query(
-        "SELECT stok FROM barang WHERE nama_barang=?",
-        [barang],
-        (err, result) => {
+      if (result.length === 0) {
+        return res.send("Barang tidak ditemukan");
+      }
 
-            if (err) {
-                console.log(err);
-                return res.send("Error");
-            }
+      if (result[0].stok < jumlah) {
+        return res.send("Stok tidak cukup");
+      }
 
-            if (result.length === 0) {
-                return res.send("Barang tidak ditemukan");
-            }
+      // kurangi stok
+      db.query("UPDATE barang SET stok = stok - ? WHERE nama_barang=?", [
+        jumlah,
+        barang,
+      ]);
 
-            if (result[0].stok < jumlah) {
-                return res.send("Stok tidak cukup");
-            }
+      // simpan peminjaman
+      db.query(
+        "INSERT INTO peminjaman (nama_peminjam, nama_barang, jumlah, tanggal_pinjam, status) VALUES (?, ?, ?, ?, ?)",
+        [nama, barang, jumlah, tgl_pinjam, "dipinjam"],
+      );
 
-            // kurangi stok
-            db.query(
-                "UPDATE barang SET stok = stok - ? WHERE nama_barang=?",
-                [jumlah, barang]
-            );
-
-            // simpan peminjaman
-            db.query(
-                "INSERT INTO peminjaman (nama_peminjam, nama_barang, jumlah, tanggal_pinjam, status) VALUES (?, ?, ?, ?, ?)",
-                [nama, barang, jumlah, tgl_pinjam, "dipinjam"]
-            );
-
-            res.send("Berhasil pinjam");
-        }
-    );
-
+      res.send("Berhasil pinjam");
+    },
+  );
 });
-
 
 // =======================
 // LIHAT DATA PEMINJAMAN
 // =======================
-app.get('/peminjaman', (req, res) => {
+app.get("/peminjaman", (req, res) => {
+  db.query("SELECT * FROM peminjaman", (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.send("Error");
+    }
 
-    db.query(
-        "SELECT * FROM peminjaman",
-        (err, result) => {
-
-            if (err) {
-                console.log(err);
-                return res.send("Error");
-            }
-
-            res.json(result);
-        }
-    );
-
+    res.json(result);
+  });
 });
-
 
 // =======================
 // KEMBALIKAN BARANG
 // =======================
-app.put('/kembalikan/:id', (req, res) => {
+app.put("/kembalikan/:id", (req, res) => {
+  const id = req.params.id;
 
-    const id = req.params.id;
-    const { tgl_kembali } = req.body;
+  db.query(
+    "SELECT nama_barang, jumlah, status FROM peminjaman WHERE id=?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.send("Error");
+      }
 
-    db.query(
-        "SELECT nama_barang, jumlah, status FROM peminjaman WHERE id=?",
+      if (result.length === 0) {
+        return res.send("Data tidak ditemukan");
+      }
+
+      const data = result[0];
+
+      if (data.status === "dikembalikan") {
+        return res.send("Barang sudah dikembalikan");
+      }
+
+      // tambah stok kembali
+      db.query("UPDATE barang SET stok = stok + ? WHERE nama_barang=?", [
+        data.jumlah,
+        data.nama_barang,
+      ]);
+
+      // ubah status peminjaman
+      db.query(
+        "UPDATE peminjaman SET status='dikembalikan', tanggal_kembali=CURDATE() WHERE id=?",
         [id],
-        (err, result) => {
+        (err) => {
+          if (err) {
+            console.log(err);
+            return res.send("Gagal mengembalikan");
+          }
 
-            if (err) {
-                console.log(err);
-                return res.send("Error");
-            }
-
-            if (result.length === 0) {
-                return res.send("Data tidak ditemukan");
-            }
-
-            const data = result[0];
-
-            if (data.status === "dikembalikan") {
-                return res.send("Barang sudah dikembalikan");
-            }
-
-            // kembalikan stok
-            db.query(
-                "UPDATE barang SET stok = stok + ? WHERE nama_barang=?",
-                [data.jumlah, data.nama_barang]
-            );
-
-            // update status
-            db.query(
-                "UPDATE peminjaman SET status='dikembalikan', tanggal_kembali=? WHERE id=?",
-                [tgl_kembali, id]
-            );
-
-            res.send("Barang berhasil dikembalikan");
-        }
-    );
-
+          res.send("Barang berhasil dikembalikan");
+        },
+      );
+    },
+  );
 });
-
-
 // =======================
 // JALANKAN SERVER
 // =======================
 app.listen(3000, () => {
-    console.log("Server jalan di http://localhost:3000");
+  console.log("Server jalan di http://localhost:3000");
 });
